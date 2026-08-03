@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "DraBornMarket",
+    "slug": "drabornmarket",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "android": {
+      "package": "com.draborneagle.drabornmarket",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "backgroundColor": "#0E7A4B"
+      },
+      "navigationBar": {
+        "backgroundColor": "#F4F7F5",
+        "barStyle": "dark-content"
+      },
+      "predictiveBackGestureEnabled": true
+    },
+    "ios": {
+      "bundleIdentifier": "com.draborneagle.drabornmarket",
+      "supportsTablet": true
+    }
+  }
+}
