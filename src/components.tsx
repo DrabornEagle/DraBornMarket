@@ -43,15 +43,36 @@ export function DkdAnimatedPressable({
   ...props
 }: PressableProps & { style?: StyleProp<ViewStyle> }) {
   const dkdScale = useRef(new Animated.Value(1)).current;
+  const dkdFlatStyle = StyleSheet.flatten(style);
+  const dkdHasExplicitWidth = dkdFlatStyle?.width !== undefined;
+  const dkdOuterStyle: StyleProp<ViewStyle> = dkdHasExplicitWidth
+    ? {
+        width: dkdFlatStyle.width,
+        minWidth: dkdFlatStyle.minWidth,
+        maxWidth: dkdFlatStyle.maxWidth,
+        alignSelf: dkdFlatStyle.alignSelf,
+        flexShrink: dkdFlatStyle.flexShrink,
+      }
+    : undefined;
+
   return (
     <Pressable
       {...props}
+      style={dkdOuterStyle}
       disabled={disabled}
       onPress={onPress}
       onPressIn={() => Animated.spring(dkdScale, { toValue: 0.96, useNativeDriver: true, speed: 35, bounciness: 3 }).start()}
       onPressOut={() => Animated.spring(dkdScale, { toValue: 1, useNativeDriver: true, speed: 25, bounciness: 8 }).start()}
     >
-      <Animated.View style={[style, { transform: [{ scale: dkdScale }], opacity: disabled ? 0.45 : 1 }]}>{children}</Animated.View>
+      <Animated.View
+        style={[
+          style,
+          dkdHasExplicitWidth && dkdComponentStyles.animatedFullWidth,
+          { transform: [{ scale: dkdScale }], opacity: disabled ? 0.45 : 1 },
+        ]}
+      >
+        {children}
+      </Animated.View>
     </Pressable>
   );
 }
@@ -73,10 +94,10 @@ export function DkdEntrance({ children, delay = 0, style }: { children: React.Re
 export function DkdSectionHeader({ title, action, onAction }: { title: string; action?: string; onAction?: () => void }) {
   return (
     <View style={dkdComponentStyles.sectionHeader}>
-      <Text style={dkdComponentStyles.sectionTitle}>{title}</Text>
+      <Text numberOfLines={2} style={dkdComponentStyles.sectionTitle}>{title}</Text>
       {action ? (
         <Pressable onPress={onAction} hitSlop={8}>
-          <Text style={dkdComponentStyles.sectionAction}>{action}</Text>
+          <Text numberOfLines={1} style={dkdComponentStyles.sectionAction}>{action}</Text>
         </Pressable>
       ) : null}
     </View>
@@ -119,7 +140,7 @@ export function DkdProductCard({
         <Text numberOfLines={2} style={dkdComponentStyles.productName}>{product.name}</Text>
         <Text style={dkdComponentStyles.productAmount}>{product.amount}</Text>
         <View style={dkdComponentStyles.productMeta}>
-          <View>
+          <View style={dkdComponentStyles.productPriceArea}>
             <Text style={dkdComponentStyles.productPrice}>{dkdFormatPrice(dkdBest)}</Text>
             <Text numberOfLines={1} style={dkdComponentStyles.productMarket}>{dkdMarket?.marketName ?? 'Market'} • {product.offers.length} fiyat</Text>
           </View>
@@ -151,7 +172,7 @@ export function DkdBottomNav({ active, cartCount, onChange }: { active: DkdTab; 
               <DkdIcon ios={tab.ios} android={tab.android} size={22} color={dkdActive ? dkdColors.primary : dkdColors.inkMuted} />
               {tab.id === 'cart' && cartCount > 0 ? <Text style={dkdComponentStyles.cartBadge}>{cartCount > 9 ? '9+' : cartCount}</Text> : null}
             </View>
-            <Text style={[dkdComponentStyles.tabLabel, dkdActive && dkdComponentStyles.tabLabelActive]}>{tab.label}</Text>
+            <Text numberOfLines={1} style={[dkdComponentStyles.tabLabel, dkdActive && dkdComponentStyles.tabLabelActive]}>{tab.label}</Text>
           </Pressable>
         );
       })}
@@ -160,8 +181,9 @@ export function DkdBottomNav({ active, cartCount, onChange }: { active: DkdTab; 
 }
 
 const dkdComponentStyles = StyleSheet.create({
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
-  sectionTitle: { fontSize: 20, fontWeight: '800', color: dkdColors.ink, letterSpacing: -0.4 },
+  animatedFullWidth: { width: '100%' },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12 },
+  sectionTitle: { flex: 1, fontSize: 20, lineHeight: 25, fontWeight: '800', color: dkdColors.ink, letterSpacing: -0.4 },
   sectionAction: { fontSize: 13, fontWeight: '800', color: dkdColors.primary },
   productCard: { width: 174, backgroundColor: dkdColors.surface, borderRadius: dkdRadius.large, overflow: 'hidden', borderWidth: 1, borderColor: dkdColors.line },
   productCardCompact: { width: '100%' },
@@ -175,11 +197,12 @@ const dkdComponentStyles = StyleSheet.create({
   productName: { minHeight: 39, marginTop: 3, color: dkdColors.ink, fontSize: 15, lineHeight: 19, fontWeight: '800' },
   productAmount: { color: dkdColors.inkMuted, fontSize: 12, marginTop: 3 },
   productMeta: { marginTop: 11, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 8 },
+  productPriceArea: { flex: 1, minWidth: 0 },
   productPrice: { fontSize: 16, color: dkdColors.ink, fontWeight: '900' },
-  productMarket: { marginTop: 2, maxWidth: 110, fontSize: 10, color: dkdColors.inkMuted },
+  productMarket: { marginTop: 2, fontSize: 10, color: dkdColors.inkMuted },
   addButton: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: dkdColors.primary },
   bottomNav: { flexDirection: 'row', backgroundColor: dkdColors.surface, borderTopWidth: 1, borderTopColor: dkdColors.line, paddingTop: 7, paddingBottom: 8, paddingHorizontal: 6 },
-  tabButton: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  tabButton: { flex: 1, minWidth: 0, alignItems: 'center', justifyContent: 'center' },
   tabIconWrap: { width: 42, height: 30, alignItems: 'center', justifyContent: 'center', borderRadius: dkdRadius.pill },
   tabIconWrapActive: { backgroundColor: dkdColors.primarySoft },
   tabLabel: { marginTop: 2, fontSize: 9.5, fontWeight: '700', color: dkdColors.inkMuted },
